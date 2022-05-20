@@ -117,7 +117,7 @@
           <div>
           </div>
           <div class="alert alert-primary" role="alert">
-            请在阅读的朗读引擎设置中选择网络导入此链接【一键导入到阅读貌似链接太长导致会导入默认的，有高手能改改吗？】。
+            请在阅读的朗读引擎设置中选择网络导入此链接。
           </div>
         </div>
       </div>
@@ -125,6 +125,7 @@
   </div>
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <script type="text/javascript" src="TTSedge.json"></script>
+  <script src="./base64/base64.js"></script>
   <script src="./bootstrap/dist/js/bootstrap.bundle.min.js"></script>
   <script src="./qrcode-svg/lib/qrcode.min.js"></script>
   <script>
@@ -154,31 +155,31 @@
           }
           option.innerText = item['LocalName'] + "-" + Gender + "-" + Locale;
           voice.append(option);
-		  getstyleName(0);
+      getstyleName(0);
         }
       });
     }
-	function getstyleName(styleIndex){
-		let style = document.getElementsByName('styleName')[0];
-		let stylearr = {"affectionate":"撒娇","angry":"恼怒","assistant":"助理","calm":"冷静","chat":"聊天","cheerful":"开心","customerservice":"客服","depressed":"沮丧","disgruntled":"抱怨","embarrassed":"尴尬","empathetic":"关心","envious":"渴望","fearful":"恐惧","gentle":"温柔","lyrical":"抒情","narration-professional":"旁白-专业","narration-relaxed":"轻松阅读","newscast":"新闻","newscast-casual":"新闻-休闲","newscast-formal":"新闻-正式","sad":"悲伤","serious":"严肃"}
-		style.options.length=0;
-		let option = document.createElement('option');
-		option.value = "normal";
-		option.innerText = "normal[默认]";
-		style.append(option);
-		document.getElementsByName('name')[0] = '微软' + voices[styleIndex].LocalName;
-		let styles = voices[styleIndex].StyleList;
-		styles.forEach(styleName =>{
-			let option2 = document.createElement('option');
-			option2.value = styleName;
-			let opvalue = stylearr[styleName.toLowerCase()];
-			if (opvalue == undefined){
-				opvalue = "未知";
-				}
-			option2.innerText = styleName + "[" + opvalue + "]";
-			style.append(option2);
-		});
-	}
+  function getstyleName(styleIndex){
+    let style = document.getElementsByName('styleName')[0];
+    let stylearr = {"affectionate":"撒娇","angry":"恼怒","assistant":"助理","calm":"冷静","chat":"聊天","cheerful":"开心","customerservice":"客服","depressed":"沮丧","disgruntled":"抱怨","embarrassed":"尴尬","empathetic":"关心","envious":"渴望","fearful":"恐惧","gentle":"温柔","lyrical":"抒情","narration-professional":"旁白-专业","narration-relaxed":"轻松阅读","newscast":"新闻","newscast-casual":"新闻-休闲","newscast-formal":"新闻-正式","sad":"悲伤","serious":"严肃"}
+    style.options.length=0;
+    let option = document.createElement('option');
+    option.value = "normal";
+    option.innerText = "normal[默认]";
+    style.append(option);
+    document.getElementsByName('name')[0].value = '微软' + voices[styleIndex].LocalName;
+    let styles = voices[styleIndex].StyleList;
+    styles.forEach(styleName =>{
+      let option2 = document.createElement('option');
+      option2.value = styleName;
+      let opvalue = stylearr[styleName.toLowerCase()];
+      if (opvalue == undefined){
+        opvalue = "未知";
+        }
+      option2.innerText = styleName + "[" + opvalue + "]";
+      style.append(option2);
+    });
+  }
     function createSSML(text, voiceName, styleName, styleDegree) {
       var ssml = '\
         <speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="zh-CN">\
@@ -242,36 +243,29 @@
     }
 
     function createLegadoUrl() {
+      var url = window.location.protocol + '//' + window.location.host;
       var name = document.getElementsByName('name')[0].value;
       var voiceName = document.getElementsByName('voiceName')[0].value;
       var voiceFormat = document.getElementsByName('voiceFormat')[0].value;
       var styleName = document.getElementsByName('styleName')[0].value;
       var styleDegree = document.getElementsByName('styleDegree')[0].value;
       var token = document.getElementsByName('token')[0].value;
-      var previewText = document.getElementsByName('previewText')[0].value;
-      var str = {};
-	  str['api'] = encodeURI(window.location.protocol + '//' + window.location.host + '/api/ra');
-	  str['name'] = encodeURI(name);
-	  str['voiceName'] = voiceName;
-	  str['voiceFormat'] = voiceFormat;
-	  str['styleName'] = styleName;
-	  str['styleDegree'] = styleDegree;
-	  str['token'] = token;
-      let base64Str = Buffer.from('Hello 中国!','utf-8').toString('base64')
-      console.log(base64Str)
-      var url = window.location.protocol + '//' + window.location.host + '/api/legado?api=' + encodeURI(window.location.protocol + '//' + window.location.host + '/api/ra')
-        + '&name=' + encodeURI(name)
-        + '&voiceName=' + voiceName
-        + '&voiceFormat=' + voiceFormat
-        + '&styleName=' + styleName
-        + '&styleDegree=' + styleDegree
-        + '&token=' + token;
-      var svg = new QRCode(url).svg();
-      var modal = new bootstrap.Modal(document.getElementById('legadoUrlModal'))
+      var base64arr = {
+        'name':encodeURI(name),
+        'voiceName':voiceName,
+        'voiceFormat':voiceFormat,
+        'styleName':styleName,
+        'styleDegree':styleDegree,
+        'token':token,
+        'url':encodeURI(url),
+      };
+      var allurl = url + '/api/legado?json=' + Base64.encode(JSON.stringify(base64arr));
+      var svg = new QRCode(allurl).svg();
+      var modal = new bootstrap.Modal(document.getElementById('legadoUrlModal'));
       modal.show();
       document.getElementById('legadoUrlQRCode').innerHTML = svg;
-      document.getElementById('legadoUrl').value = url;
-      document.getElementById('legadoUrlA').href = "legado://import/auto?src=" + url;
+      document.getElementById('legadoUrl').value = allurl;
+      document.getElementById('legadoUrlA').href = "legado://import/auto?src=" + allurl;
     }
   </script>
 </body>
